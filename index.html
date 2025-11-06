@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mysore Bus App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff3e0;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-orange { background: #ff6b35; color: white; }
+        .btn-green { background: #4caf50; color: white; }
+        .btn-blue { background: #2196f3; color: white; }
+        .hidden { display: none; }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .success { text-align: center; padding: 20px; }
+        .fare-box { background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #ff6b35;">🚌 KSRTC Mysore</h1>
+        
+        <!-- Step 1: QR Code -->
+        <div id="step1">
+            <div style="background: #ff6b35; color: white; padding: 40px; text-align: center; border-radius: 10px; margin: 20px 0;">
+                <div style="font-size: 50px;">📱</div>
+                <h2>Scan QR Code</h2>
+                <p>Welcome to KSRTC Digital Bus</p>
+            </div>
+            <button class="btn btn-orange" onclick="goToStep2()">Start Journey</button>
+        </div>
+        
+        <!-- Step 2: Select Stations -->
+        <div id="step2" class="hidden">
+            <h2>Select Your Journey</h2>
+            
+            <label>From Station:</label>
+            <select id="fromStation">
+                <option value="">Choose departure</option>
+                <option value="palace">Mysore Palace</option>
+                <option value="railway">Railway Station</option>
+                <option value="market">Devaraja Market</option>
+                <option value="chamundi">Chamundi Hills</option>
+            </select>
+            
+            <label>To Station:</label>
+            <select id="toStation">
+                <option value="">Choose destination</option>
+                <option value="palace">Mysore Palace</option>
+                <option value="railway">Railway Station</option>
+                <option value="market">Devaraja Market</option>
+                <option value="chamundi">Chamundi Hills</option>
+            </select>
+            
+            <button class="btn btn-green" onclick="calculateFare()">Calculate Fare</button>
+            
+            <!-- Fare Display -->
+            <div id="fareDisplay" class="hidden">
+                <div class="fare-box">
+                    <h3>Journey Details</h3>
+                    <p><strong>Route:</strong> <span id="routeText"></span></p>
+                    <p><strong>Distance:</strong> <span id="distanceText"></span></p>
+                    <p><strong>Fare:</strong> ₹<span id="fareAmount"></span></p>
+                </div>
+                <button class="btn btn-blue" onclick="goToPayment()">Proceed to Payment</button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Payment -->
+        <div id="step3" class="hidden">
+            <h2>Payment Method</h2>
+            <button class="btn btn-orange" onclick="selectPayment('UPI')">📱 UPI Payment</button>
+            <button class="btn btn-orange" onclick="selectPayment('Card')">💳 Card Payment</button>
+            <button class="btn btn-orange" onclick="selectPayment('Wallet')">💰 Digital Wallet</button>
+            
+            <div id="paymentForm" class="hidden">
+                <h3 id="paymentTitle">Enter Payment Details</h3>
+                <input type="text" id="paymentInput" placeholder="Enter details">
+                <button class="btn btn-green" onclick="processPayment()">Pay Now</button>
+            </div>
+        </div>
+        
+        <!-- Step 4: Success -->
+        <div id="step4" class="hidden">
+            <div class="success">
+                <div style="font-size: 80px;">✅</div>
+                <h2>Payment Successful!</h2>
+                <div class="fare-box">
+                    <p><strong>Ticket ID:</strong> #KSRTC-2024-001</p>
+                    <p><strong>Route:</strong> <span id="ticketRoute"></span></p>
+                    <p><strong>Valid:</strong> Single Journey</p>
+                </div>
+                <button class="btn btn-orange" onclick="startOver()">New Journey</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Step 1 to Step 2
+        function goToStep2() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+        }
+        
+        // Calculate Fare
+        function calculateFare() {
+            var from = document.getElementById('fromStation').value;
+            var to = document.getElementById('toStation').value;
+            
+            if (!from || !to) {
+                alert('Please select both stations');
+                return;
+            }
+            
+            if (from === to) {
+                alert('Please select different stations');
+                return;
+            }
+            
+            // Set fare details
+            var fare = 25; // Default fare
+            var distance = "8.5 km";
+            var fromText = document.getElementById('fromStation').options[document.getElementById('fromStation').selectedIndex].text;
+            var toText = document.getElementById('toStation').options[document.getElementById('toStation').selectedIndex].text;
+            
+            document.getElementById('routeText').textContent = fromText + ' → ' + toText;
+            document.getElementById('distanceText').textContent = distance;
+            document.getElementById('fareAmount').textContent = fare;
+            document.getElementById('fareDisplay').classList.remove('hidden');
+        }
+        
+        // Go to Payment
+        function goToPayment() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+        }
+        
+        // Select Payment Method
+        function selectPayment(method) {
+            document.getElementById('paymentTitle').textContent = method + ' Payment';
+            document.getElementById('paymentInput').placeholder = 'Enter ' + method + ' details';
+            document.getElementById('paymentForm').classList.remove('hidden');
+        }
+        
+        // Process Payment
+        function processPayment() {
+            var input = document.getElementById('paymentInput').value;
+            if (!input) {
+                alert('Please enter payment details');
+                return;
+            }
+            
+            // Show success
+            var routeText = document.getElementById('routeText').textContent;
+            document.getElementById('ticketRoute').textContent = routeText;
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step4').classList.remove('hidden');
+        }
+        
+        // Start Over
+        function startOver() {
+            // Hide all steps except first
+            document.getElementById('step4').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+            
+            // Reset forms
+            document.getElementById('fromStation').value = '';
+            document.getElementById('toStation').value = '';
+            document.getElementById('paymentInput').value = '';
+            document.getElementById('fareDisplay').classList.add('hidden');
+            document.getElementById('paymentForm').classList.add('hidden');
+        }
+        
+        // Test message
+        console.log('Bus app loaded successfully!');
+    </script>
+</body>
+</html>
